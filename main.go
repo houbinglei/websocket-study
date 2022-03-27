@@ -12,7 +12,7 @@ func main() {
 
 	http.HandleFunc("/sendall", func(w http.ResponseWriter, req *http.Request) {
 		msg := req.URL.Query().Get("msg")
-		core.Client.SendAll(msg)
+		core.ClientMap.SendAll(msg)
 		w.Write([]byte("OK"))
 
 	})

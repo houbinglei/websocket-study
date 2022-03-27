@@ -2,27 +2,39 @@ package core
 
 import (
 	"github.com/gorilla/websocket"
+	"log"
 	"sync"
+	"time"
 )
 
-var Client *ClientMap
+var ClientMap *ClientMapData
 
-type ClientMap struct {
+type ClientMapData struct {
 	data sync.Map
 }
 
 func init() {
-	Client = &ClientMap{}
+	ClientMap = &ClientMapData{}
 }
 
-func (this *ClientMap) Store(key string, client *websocket.Conn) *ClientMap {
-	this.data.Store(key, client)
-	return this
+func (this *ClientMapData) Store(conn *websocket.Conn) {
+	wsClient := NewWsClient(conn)
+	this.data.Store(conn.RemoteAddr().String(), wsClient)
+	go wsClient.Ping(time.Second * 1)
 }
 
-func (this *ClientMap) SendAll(str string) {
-	this.data.Range(func(key, value any) bool {
-		value.(*websocket.Conn).WriteMessage(websocket.TextMessage, []byte(str))
+//向所有客户端 发送消息
+func (this *ClientMapData) SendAll(msg string) {
+	this.data.Range(func(key, value interface{}) bool {
+		c := value.(*WsClient).conn
+		err := c.WriteMessage(websocket.TextMessage, []byte(msg))
+		if err != nil {
+			this.Remove(c)
+			log.Println(err)
+		}
 		return true
 	})
+}
+func (this *ClientMapData) Remove(conn *websocket.Conn) {
+	this.data.Delete(conn.RemoteAddr().String())
 }

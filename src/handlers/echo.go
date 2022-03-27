@@ -7,5 +7,5 @@ import (
 
 func Echo(w http.ResponseWriter, req *http.Request) {
 	client, _ := core.Upgrader.Upgrade(w, req, nil) //client 是客户端连接对象
-	core.Client.Store(client.RemoteAddr().String(), client)
+	core.ClientMap.Store(client)
 }
