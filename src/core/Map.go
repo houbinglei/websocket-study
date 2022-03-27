@@ -4,7 +4,6 @@ import (
 	"github.com/gorilla/websocket"
 	"log"
 	"sync"
-	"time"
 )
 
 var ClientMap *ClientMapData
@@ -20,7 +19,9 @@ func init() {
 func (this *ClientMapData) Store(conn *websocket.Conn) {
 	wsClient := NewWsClient(conn)
 	this.data.Store(conn.RemoteAddr().String(), wsClient)
-	go wsClient.Ping(time.Second * 1)
+	go wsClient.handlerLoop()
+	//go wsClient.Ping(time.Second * 1)
+	go wsClient.ReadLoop()
 }
 
 //向所有客户端 发送消息

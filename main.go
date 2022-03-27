@@ -14,7 +14,6 @@ func main() {
 		msg := req.URL.Query().Get("msg")
 		core.ClientMap.SendAll(msg)
 		w.Write([]byte("OK"))
-
 	})
 
 	err := http.ListenAndServe(":8080", nil)
